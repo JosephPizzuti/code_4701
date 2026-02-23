@@ -1,3 +1,14 @@
+USE Company_Database;
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS DEPENDENT;
+DROP TABLE IF EXISTS WORKS_ON;
+DROP TABLE IF EXISTS PROJECT;
+DROP TABLE IF EXISTS DEPT_LOCATIONS;
+DROP TABLE IF EXISTS DEPARTMENT;
+DROP TABLE IF EXISTS EMPLOYEE;
+
 CREATE TABLE EMPLOYEE
   ( Fname           VARCHAR(15)     NOT NULL,
     Minit           CHAR,
@@ -43,7 +54,7 @@ CREATE TABLE PROJECT
 CREATE TABLE WORKS_ON
   ( Essn            CHAR(9)         NOT NULL,
     Pno             INT             NOT NULL,
-    Hours           DECIMAL(3,1)    NOT NULL,
+    Hours           DECIMAL(3,1),
     PRIMARY KEY (Essn, Pno),
     FOREIGN KEY (Essn) REFERENCES EMPLOYEE(Ssn),
     FOREIGN KEY (Pno) REFERENCES PROJECT(Pnumber) );
@@ -56,6 +67,7 @@ CREATE TABLE DEPENDENT
     Relationship    VARCHAR(8),
     PRIMARY KEY (Essn, Dependent_name),
     FOREIGN KEY (Essn) REFERENCES EMPLOYEE(Ssn) );
+
 
 INSERT INTO DEPARTMENT (Dname, Dnumber, Mgr_ssn, Mgr_start_date) VALUES
   ('Research', 5, '333445555', '1988-05-22'),
@@ -113,3 +125,5 @@ INSERT INTO DEPENDENT (Essn, Dependent_name, Sex, Bdate, Relationship) VALUES
   ('123456789', 'Michael', 'M', '1988-01-04', 'Son'),
   ('123456789', 'Alice', 'F', '1988-12-30', 'Daughter'),
   ('123456789', 'Elizabeth', 'F', '1967-05-05', 'Spouse');
+
+SET FOREIGN_KEY_CHECKS = 1;
