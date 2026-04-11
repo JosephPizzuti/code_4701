@@ -1,4 +1,4 @@
-USE Company_Database;
+USE Company;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
