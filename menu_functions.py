@@ -1,6 +1,11 @@
 import mysql.connector
 
 def add_new_employee(connection, cursor):
+    """
+    Accept input for all fields of employee to add new employee.
+    (Values where NULL is acceptable may be set to None when nothing is given)
+    Insert the new employee into EMPLOYEE table, commit if works, otherwise error and rollback.
+    """
     first_name = input("Enter First Name (Required): ")
     middle_initial = input("Enter Middle Initial (Optional): ") or None
     last_name = input("Enter Last Name (Required): ")
@@ -22,6 +27,10 @@ def add_new_employee(connection, cursor):
         connection.rollback()
 
 def view_employee(connection, cursor):
+    """
+    Given employee SSN, return all fields from employee as well as supervisor name,
+    the department they are from, and dependents (if any).
+    """
     employee_ssn = input("Enter Employee SSN: ")
     query = """
         SELECT e.*, s.Fname AS Super_Fname, s.Lname AS Super_Lname, d.Dname 
@@ -43,6 +52,11 @@ def view_employee(connection, cursor):
         print("Employee not found.")
 
 def modify_employee(connection, cursor):
+    """
+    Given employee SSN, return employee info and allow user to update certain fields.
+    (Address, sex, salary, super_ssn, dno)
+    Record is locked upon retrieving employee SSN, preventing overlapping modification.
+    """
     employee_ssn = input("Enter Employee SSN to modify: ")
     try:
         connection.start_transaction()
@@ -67,6 +81,12 @@ def modify_employee(connection, cursor):
         connection.rollback()
 
 def remove_employee(connection, cursor):
+    """
+    Given employee SSN, return employee info and ask for confirmation for removal.
+    If the employee has dependencies, request will be cancelled and user must first delete dependencies.
+    If confirmation is provided and no dependencies exist, employee will be removed from DB.
+    Record is locked upon retrieving employee SSN, preventing overlapping modifications.
+    """
     employee_ssn = input("Enter Employee SSN to remove: ")
     try:
         connection.start_transaction()
@@ -92,6 +112,12 @@ def remove_employee(connection, cursor):
         connection.rollback()
 
 def add_new_dependent(connection, cursor):
+    """
+    Given employee SSN, return dependent info for provided employee.
+    Retrieves info for dependent, allowing empty entries for NULL-capable values.
+    Uses info to create new dependent entry for given employee.
+    Employee record is locked upon retrieving SSN, preventing overlapping modifications.
+    """
     employee_ssn = input("Enter Employee SSN: ")
     try:
         connection.start_transaction()
@@ -114,6 +140,12 @@ def add_new_dependent(connection, cursor):
         connection.rollback()
 
 def remove_dependent(connection, cursor):
+    """
+    Given employee SSN, return dependent info for provided employee.
+    Retrieves first name for dependent that is going to be removed.    
+    Uses name to delete dependent from DB.
+    Employee record is locked upon retrieving SSN, preventing overlapping modifications.
+    """
     employee_ssn = input("Enter Employee SSN: ")
     try:
         connection.start_transaction()
@@ -130,6 +162,10 @@ def remove_dependent(connection, cursor):
         connection.rollback()
 
 def add_new_department(connection, cursor):
+    """
+    Requests values for new department entry, allowing empty for NULL where possible.
+    Uses values to insert new department entry into DB.
+    """
     name = input("Department Name (Required): ")
     number = input("Department Number (Required): ")
     manager_ssn = input("Manager SSN (Required): ")
@@ -143,6 +179,10 @@ def add_new_department(connection, cursor):
         connection.rollback()
 
 def view_department(connection, cursor):
+    """
+    Requests dnumber.
+    Using this, returns list of departments, manager names, and all possible locations of department.
+    """
     dnumber = input("Enter Dnumber: ")
     cursor.execute("SELECT d.*, e.Fname, e.Lname FROM DEPARTMENT d JOIN EMPLOYEE e ON d.Mgr_ssn = e.Ssn WHERE d.Dnumber = %s", (dnumber,))
     dept = cursor.fetchone()
@@ -154,6 +194,13 @@ def view_department(connection, cursor):
         print("Department not found.")
 
 def remove_department(connection, cursor):
+    """
+    Requests dnumber and shows information for that department.
+    Requests confirmation to remove department from DB.
+    Checks for dependencies that need to be removed and errors out if anything is found.
+    Removes entry from DB if no errors occur.
+    Locks department record to prevent overlapping access.
+    """
     dnumber = input("Enter Dnumber to remove: ")
     try:
         connection.start_transaction()
@@ -175,6 +222,11 @@ def remove_department(connection, cursor):
         connection.rollback()
 
 def add_department_location(connection, cursor):
+    """
+    Requests dnumber, and displays all locations for said department.
+    Will ask for new location to enter and add it to the DB once provided.
+    Locks department record to prevent overlapping access.
+    """
     dnumber = input("Enter Dnumber: ")
     try:
         connection.start_transaction()
@@ -190,6 +242,11 @@ def add_department_location(connection, cursor):
         connection.rollback()
 
 def remove_department_location(connection, cursor):
+    """
+    Requests dnumber, and displays all locations for said department.
+    Will ask for a location to enter and remove it if a matching location exists.
+    Locks department record to prevent overlapping access.
+    """
     dnumber = input("Enter Dnumber: ")
     try:
         connection.start_transaction()
