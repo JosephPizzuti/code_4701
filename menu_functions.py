@@ -39,17 +39,22 @@ def view_employee(connection, cursor):
         JOIN DEPARTMENT d ON e.Dno = d.Dnumber 
         WHERE e.Ssn = %s
     """
-    cursor.execute(query, (employee_ssn,))
-    result = cursor.fetchone()
-    if result:
-        print("\n--- Employee Record ---")
-        for key, value in result.items():
-            print(f"{key}: {value}")
-        cursor.execute("SELECT Dependent_name, Relationship FROM DEPENDENT WHERE Essn = %s", (employee_ssn,))
-        dependents = cursor.fetchall()
-        print("Dependents:", dependents if dependents else "None")
-    else:
-        print("Employee not found.")
+    try:
+        cursor.execute(query, (employee_ssn,))
+        result = cursor.fetchone()
+        if result:
+            print("\n--- Employee Record ---")
+            for key, value in result.items():
+                print(f"{key}: {value}")
+            cursor.execute("SELECT Dependent_name, Relationship FROM DEPENDENT WHERE Essn = %s", (employee_ssn,))
+            dependents = cursor.fetchall()
+            print("Dependents:", dependents if dependents else "None")
+        else:
+            print("Employee not found.")
+        connection.commit() # Clear consistent read state
+    except mysql.connector.Error as error:
+        print(f"Error: {error}")
+        connection.rollback()
 
 def modify_employee(connection, cursor):
     """
@@ -151,32 +156,17 @@ def remove_dependent(connection, cursor):
         connection.start_transaction()
         cursor.execute("SELECT * FROM EMPLOYEE WHERE Ssn = %s FOR UPDATE", (employee_ssn,))
         employee = cursor.fetchone()
-        
         if not employee:
-            print("Error: No employee found with that SSN.")
+            print("Employee not found.")
             connection.rollback()
             return
-
         cursor.execute("SELECT Dependent_name FROM DEPENDENT WHERE Essn = %s", (employee_ssn,))
         dependents = cursor.fetchall()
-        
-        if not dependents:
-            print("This employee has no dependents.")
-            connection.rollback()
-            return
-            
         print("Dependents:", dependents)
         target = input("Enter name of dependent to remove: ") or None
-        
         cursor.execute("DELETE FROM DEPENDENT WHERE Essn = %s AND Dependent_name = %s", (employee_ssn, target))
-        
-        if cursor.rowcount > 0:
-            connection.commit()
-            print("Dependent removed.")
-        else:
-            print(f"Error: No dependent found with the name '{target}'.")
-            connection.rollback()
-            
+        connection.commit()
+        print("Dependent removed.")
     except mysql.connector.Error as error:
         print(f"Error: {error}")
         connection.rollback()
@@ -204,14 +194,19 @@ def view_department(connection, cursor):
     Using this, returns list of departments, manager names, and all possible locations of department.
     """
     dnumber = input("Enter Dnumber: ") or None
-    cursor.execute("SELECT d.*, e.Fname, e.Lname FROM DEPARTMENT d JOIN EMPLOYEE e ON d.Mgr_ssn = e.Ssn WHERE d.Dnumber = %s", (dnumber,))
-    dept = cursor.fetchone()
-    if dept:
-        print(f"Dept: {dept['Dname']}, Manager: {dept['Fname']} {dept['Lname']}")
-        cursor.execute("SELECT Dlocation FROM DEPT_LOCATIONS WHERE Dnumber = %s", (dnumber,))
-        print("Locations:", [loc['Dlocation'] for loc in cursor.fetchall()])
-    else:
-        print("Department not found.")
+    try:
+        cursor.execute("SELECT d.*, e.Fname, e.Lname FROM DEPARTMENT d JOIN EMPLOYEE e ON d.Mgr_ssn = e.Ssn WHERE d.Dnumber = %s", (dnumber,))
+        dept = cursor.fetchone()
+        if dept:
+            print(f"Dept: {dept['Dname']}, Manager: {dept['Fname']} {dept['Lname']}")
+            cursor.execute("SELECT Dlocation FROM DEPT_LOCATIONS WHERE Dnumber = %s", (dnumber,))
+            print("Locations:", [loc['Dlocation'] for loc in cursor.fetchall()])
+        else:
+            print("Department not found.")
+        connection.commit() # Clear consistent read state
+    except mysql.connector.Error as error:
+        print(f"Error: {error}")
+        connection.rollback()
 
 def remove_department(connection, cursor):
     """
@@ -239,6 +234,9 @@ def remove_department(connection, cursor):
             connection.rollback()
     except mysql.connector.IntegrityError:
         print("Warning: Dependencies exist. Resolve referential integrity constraints first.")
+        connection.rollback()
+    except mysql.connector.Error as error:
+        print(f"Error: {error}")
         connection.rollback()
 
 def add_department_location(connection, cursor):
