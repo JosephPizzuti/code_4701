@@ -51,7 +51,7 @@ def view_employee(connection, cursor):
             print("Dependents:", dependents if dependents else "None")
         else:
             print("Employee not found.")
-        connection.commit() # Clear consistent read state
+        connection.commit()
     except mysql.connector.Error as error:
         print(f"Error: {error}")
         connection.rollback()
@@ -203,7 +203,7 @@ def view_department(connection, cursor):
             print("Locations:", [loc['Dlocation'] for loc in cursor.fetchall()])
         else:
             print("Department not found.")
-        connection.commit() # Clear consistent read state
+        connection.commit() 
     except mysql.connector.Error as error:
         print(f"Error: {error}")
         connection.rollback()

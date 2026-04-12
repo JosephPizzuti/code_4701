@@ -27,12 +27,13 @@ def print_menu():
 def main():
     try:
         connection = mysql.connector.connect(**config)
-        cursor = connection.cursor(dictionary=True, buffered=True)
 
         while True:
             print_menu()
             user_input = input("Enter your selection here: ").lower()
 
+            cursor = connection.cursor(dictionary=True, buffered=True)
+            
             match user_input:
                 case '1': add_new_employee(connection, cursor)
                 case '2': view_employee(connection, cursor)
