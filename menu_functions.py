@@ -249,6 +249,12 @@ def add_department_location(connection, cursor):
     try:
         connection.start_transaction()
         cursor.execute("SELECT * FROM DEPARTMENT WHERE Dnumber = %s FOR UPDATE", (dnumber,))
+        department = cursor.fetchone()
+        if not department:
+            print(f"Error: No department found wit hDnumner '{dnumber}'.")
+            connection.rollback()
+            return
+
         cursor.execute("SELECT Dlocation FROM DEPT_LOCATIONS WHERE Dnumber = %s", (dnumber,))
         print("Current Locations:", cursor.fetchall())
         new_loc = input("New Location: ") or None
@@ -269,6 +275,12 @@ def remove_department_location(connection, cursor):
     try:
         connection.start_transaction()
         cursor.execute("SELECT * FROM DEPARTMENT WHERE Dnumber = %s FOR UPDATE", (dnumber,))
+        department = cursor.fetchone()
+        if not department:
+            print(f"Error: No department found wit hDnumner '{dnumber}'.")
+            connection.rollback()
+            return
+
         cursor.execute("SELECT Dlocation FROM DEPT_LOCATIONS WHERE Dnumber = %s", (dnumber,))
         print("Locations:", cursor.fetchall())
         target = input("Location to remove: ") or None
