@@ -5,7 +5,7 @@ config = {
         'host': 'localhost',
         'database': 'Company',
         'user': 'root',
-        'password': '9960241Jay',
+        'password': '',
         'autocommit': True
         }
 
