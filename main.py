@@ -5,7 +5,8 @@ config = {
         'host': 'localhost',
         'database': 'Company',
         'user': 'root',
-        'password': '9960241Jay'
+        'password': '9960241Jay',
+        'autocommit': True
         }
 
 def print_menu():
