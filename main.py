@@ -58,7 +58,6 @@ def main():
         print(f"Sorry, an error has occured: {error}")
     finally:
         if 'connection' in locals() and connection.is_connected():
-            cursor.close()
             connection.close()
             print("Database disconnected")
 

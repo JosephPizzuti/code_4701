@@ -285,8 +285,12 @@ def remove_department_location(connection, cursor):
         print("Locations:", cursor.fetchall())
         target = input("Location to remove: ") or None
         cursor.execute("DELETE FROM DEPT_LOCATIONS WHERE Dnumber = %s AND Dlocation = %s", (dnumber, target))
-        connection.commit()
-        print("Location removed.")
+        if cursor.rowcount > 0:
+            connection.commit()
+            print("Location removed.")
+        else:
+            print(f"Error: Location '{target}' does not exist for this department.")
+            connection.rollback()
     except mysql.connector.Error as error:
         print(f"Error: {error}")
         connection.rollback()
