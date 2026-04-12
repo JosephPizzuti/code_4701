@@ -150,13 +150,33 @@ def remove_dependent(connection, cursor):
     try:
         connection.start_transaction()
         cursor.execute("SELECT * FROM EMPLOYEE WHERE Ssn = %s FOR UPDATE", (employee_ssn,))
+        employee = cursor.fetchone()
+        
+        if not employee:
+            print("Error: No employee found with that SSN.")
+            connection.rollback()
+            return
+
         cursor.execute("SELECT Dependent_name FROM DEPENDENT WHERE Essn = %s", (employee_ssn,))
         dependents = cursor.fetchall()
+        
+        if not dependents:
+            print("This employee has no dependents.")
+            connection.rollback()
+            return
+            
         print("Dependents:", dependents)
         target = input("Enter name of dependent to remove: ") or None
+        
         cursor.execute("DELETE FROM DEPENDENT WHERE Essn = %s AND Dependent_name = %s", (employee_ssn, target))
-        connection.commit()
-        print("Dependent removed.")
+        
+        if cursor.rowcount > 0:
+            connection.commit()
+            print("Dependent removed.")
+        else:
+            print(f"Error: No dependent found with the name '{target}'.")
+            connection.rollback()
+            
     except mysql.connector.Error as error:
         print(f"Error: {error}")
         connection.rollback()
