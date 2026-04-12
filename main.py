@@ -27,7 +27,7 @@ def print_menu():
 def main():
     try:
         connection = mysql.connector.connect(**config)
-        cursor = connection.cursor(dictionary=True)
+        cursor = connection.cursor(dictionary=True, buffered=True)
 
         while True:
             print_menu()
